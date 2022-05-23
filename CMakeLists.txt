@@ -1,0 +1,33 @@
+cmake_minimum_required (VERSION 3.4)
+project (oneAPI-crystal)
+
+set(CMAKE_CXX_COMPILER "dpcpp")
+
+# Set default build type to RelWithDebInfo if not specified
+if (NOT CMAKE_BUILD_TYPE)
+    message (STATUS "Default CMAKE_BUILD_TYPE not set using Release with Debug Info")
+    set ( CMAKE_BUILD_TYPE "RelWithDebInfo" CACHE
+          STRING "Choose the type of build, options are: None Debug Release RelWithDebInfo MinSizeRel"
+          FORCE
+        )
+endif()
+
+set(CMAKE_CXX_STANDARD 17)
+
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
+add_subdirectory (oneapi_crystal)
+
+# Set this to 'ON' to compile the examples
+option(BUILD_EXAMPLES "Build the examples for the operators" OFF)
+if(BUILD_EXAMPLES)
+    add_subdirectory(examples)
+endif()
+unset (BUILD_EXAMPLES CACHE)
+
+option(BUILD_QUERIES "Build the queries" OFF)
+if(BUILD_QUERIES)
+    add_subdirectory(queries)
+endif()
+unset (BUILD_QUERIES CACHE)
