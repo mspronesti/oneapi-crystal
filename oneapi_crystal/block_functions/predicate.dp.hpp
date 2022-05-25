@@ -75,10 +75,10 @@ namespace crystal {
     {
         if ((block_threads * items_per_thread) == num_items) {
             predicate_direct<T, SelectOp, block_threads, items_per_thread>(
-                    item_ct1.get_local_id(2), items, select_op, selection_flags);
+                    item_ct1.get_local_id(0), items, select_op, selection_flags);
         } else {
             predicate_direct<T, SelectOp, block_threads, items_per_thread>(
-                    item_ct1.get_local_id(2), items, select_op, selection_flags, num_items);
+                    item_ct1.get_local_id(0), items, select_op, selection_flags, num_items);
         }
     }
 
@@ -139,10 +139,10 @@ namespace crystal {
     {
         if ((block_threads * items_per_thread) == num_items) {
             predicate_and_direct <T, SelectOp, block_threads, items_per_thread>(
-                    item_ct1.get_local_id(2), items, select_op, selection_flags);
+                    item_ct1.get_local_id(0), items, select_op, selection_flags);
         } else {
             predicate_and_direct <T, SelectOp, block_threads, items_per_thread>(
-                    item_ct1.get_local_id(2), items, select_op, selection_flags, num_items);
+                    item_ct1.get_local_id(0), items, select_op, selection_flags, num_items);
         }
     }
 
@@ -204,10 +204,10 @@ namespace crystal {
 
         if ((block_threads * items_per_thread) == num_items) {
             predicate_or_direct<T, SelectOp, block_threads, items_per_thread>(
-                    item_ct1.get_local_id(2), items, select_op, selection_flags);
+                    item_ct1.get_local_id(0), items, select_op, selection_flags);
         } else {
             predicate_or_direct<T, SelectOp, block_threads, items_per_thread>(
-                    item_ct1.get_local_id(2), items, select_op, selection_flags, num_items);
+                    item_ct1.get_local_id(0), items, select_op, selection_flags, num_items);
         }
     }
 
