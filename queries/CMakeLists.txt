@@ -13,4 +13,4 @@ macro(add_query query)
 endmacro()
 
 add_query(q11)
-#add_query(q21)
+add_query(q12)

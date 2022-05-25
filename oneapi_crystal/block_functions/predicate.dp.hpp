@@ -342,7 +342,7 @@ namespace crystal {
     }
 
     template < typename T, int block_threads, int items_per_thread>
-    __dpct_inline__ void block_pred_gte(
+    __dpct_inline__ void predicate_gte(
             T (&items)[items_per_thread],
             T compare,
             int (&selection_flags)[items_per_thread],
