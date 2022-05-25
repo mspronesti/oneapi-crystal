@@ -36,5 +36,5 @@ jobs:
       run:  |
         mkdir -p build
         cd build
-        CXX=dpcpp cmake .. -DBUILD_QUERIES=ON
+        CXX=dpcpp cmake ..
         make -j
