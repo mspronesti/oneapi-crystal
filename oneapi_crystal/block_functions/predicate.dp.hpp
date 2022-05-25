@@ -23,7 +23,7 @@ namespace crystal {
         int block_threads, 
         int items_per_thread
         >
-    __dpct_inline__ void block_pred_direct(
+    __dpct_inline__ void predicate_direct(
             int tid,
             T (&items)[items_per_thread],
             SelectOp select_op,
@@ -43,7 +43,7 @@ namespace crystal {
         unsigned int block_threads,
         unsigned int items_per_thread
         >
-    __dpct_inline__ void block_pred_direct (
+    __dpct_inline__ void predicate_direct (
         int tid, 
         T (&items)[items_per_thread], 
         SelectOp select_op,
@@ -65,19 +65,19 @@ namespace crystal {
             int block_threads,
             int items_per_thread
             >
-    __dpct_inline__ void block_pred (
+    __dpct_inline__ void predicate (
         T (&items)[items_per_thread], 
         SelectOp select_op,
         int (&selection_flags)[items_per_thread],
         int num_items, 
-        sycl::nd_item<3> item_ct1
+        sycl::nd_item<1> item_ct1
     ) 
     {
         if ((block_threads * items_per_thread) == num_items) {
-            block_pred_direct<T, SelectOp, block_threads, items_per_thread>(
+            predicate_direct<T, SelectOp, block_threads, items_per_thread>(
                     item_ct1.get_local_id(2), items, select_op, selection_flags);
         } else {
-            block_pred_direct<T, SelectOp, block_threads, items_per_thread>(
+            predicate_direct<T, SelectOp, block_threads, items_per_thread>(
                     item_ct1.get_local_id(2), items, select_op, selection_flags, num_items);
         }
     }
@@ -88,7 +88,7 @@ namespace crystal {
             int block_threads,
             int items_per_thread
             >
-    __dpct_inline__ void block_pred_and_direct(
+    __dpct_inline__ void predicate_and_direct (
             int tid,
             T (&items)[items_per_thread],
             SelectOp select_op,
@@ -107,7 +107,7 @@ namespace crystal {
             unsigned int block_threads,
             unsigned int items_per_thread
             >
-    __dpct_inline__ void block_pred_and_direct(
+    __dpct_inline__ void predicate_and_direct (
             int tid,
             T (&items)[items_per_thread],
             SelectOp select_op,
@@ -129,19 +129,19 @@ namespace crystal {
             int block_threads,
             int items_per_thread
             >
-    __dpct_inline__ void block_pred_and (
+    __dpct_inline__ void predicate_and (
             T (&items)[items_per_thread],
             SelectOp select_op,
             int (&selection_flags)[items_per_thread],
             int num_items,
-            sycl::nd_item<3> item_ct1
+            sycl::nd_item<1> item_ct1
     ) 
     {
         if ((block_threads * items_per_thread) == num_items) {
-            block_pred_and_direct<T, SelectOp, block_threads, items_per_thread>(
+            predicate_and_direct <T, SelectOp, block_threads, items_per_thread>(
                     item_ct1.get_local_id(2), items, select_op, selection_flags);
         } else {
-            block_pred_and_direct<T, SelectOp, block_threads, items_per_thread>(
+            predicate_and_direct <T, SelectOp, block_threads, items_per_thread>(
                     item_ct1.get_local_id(2), items, select_op, selection_flags, num_items);
         }
     }
@@ -152,7 +152,7 @@ namespace crystal {
             int block_threads,
             int items_per_thread
             >
-    __dpct_inline__ void block_pred_or_direct (
+    __dpct_inline__ void predicate_or_direct (
             int tid,
             T (&items)[items_per_thread],
             SelectOp select_op,
@@ -171,7 +171,7 @@ namespace crystal {
             int block_threads,
             int items_per_thread
             >
-    __dpct_inline__ void block_pred_or_direct(
+    __dpct_inline__ void predicate_or_direct(
             int tid,
             T (&items)[items_per_thread],
             SelectOp select_op,
@@ -193,20 +193,20 @@ namespace crystal {
             int block_threads,
             int items_per_thread
             >
-    __dpct_inline__ void block_pred_or (
+    __dpct_inline__ void predicate_or (
             T (&items)[items_per_thread],
             SelectOp select_op,
             int (&selection_flags)[items_per_thread],
             int num_items, 
-            sycl::nd_item<3> item_ct1 
+            sycl::nd_item<1> item_ct1 
     ) 
     {
 
         if ((block_threads * items_per_thread) == num_items) {
-            block_pred_or_direct<T, SelectOp, block_threads, items_per_thread>(
+            predicate_or_direct<T, SelectOp, block_threads, items_per_thread>(
                     item_ct1.get_local_id(2), items, select_op, selection_flags);
         } else {
-            block_pred_or_direct<T, SelectOp, block_threads, items_per_thread>(
+            predicate_or_direct<T, SelectOp, block_threads, items_per_thread>(
                     item_ct1.get_local_id(2), items, select_op, selection_flags, num_items);
         }
     }
@@ -268,126 +268,136 @@ namespace crystal {
     };
 
     template < typename T, int block_threads, int items_per_thread>
-    __dpct_inline__ void block_pred_lt(
+    __dpct_inline__ void predicate_lt(
             T (&items)[items_per_thread],
             T compare,
             int (&selection_flags)[items_per_thread],
-            int num_items, sycl::nd_item<3> item_ct1 ){
+            int num_items, sycl::nd_item<1> item_ct1 ){
         LessThan<T> select_op(compare);
-        block_pred<T, LessThan<T>, block_threads, items_per_thread>(
+        predicate<T, LessThan<T>, block_threads, items_per_thread>(
                 items, select_op, selection_flags, num_items, item_ct1);
     }
 
     template < typename T, int block_threads, int items_per_thread>
-    __dpct_inline__ void block_pred_and_lt(
+    __dpct_inline__ void predicate_and_lt (
             T (&items)[items_per_thread],
             T compare,
             int (&selection_flags)[items_per_thread],
-            int num_items, sycl::nd_item<3> item_ct1) {
+            int num_items, sycl::nd_item<1> item_ct1) {
         LessThan<T> select_op(compare);
-        block_pred_and<T, LessThan<T>, block_threads, items_per_thread>(
+        predicate_and<T, LessThan<T>, block_threads, items_per_thread>(
                 items, select_op, selection_flags, num_items, item_ct1);
     }
 
     template < typename T, int block_threads, int items_per_thread>
-    __dpct_inline__ void block_pred_gt (
+    __dpct_inline__ void predicate_gt (
             T (&items)[items_per_thread],
             T compare,
             int (&selection_flags)[items_per_thread],
             int num_items,
-            sycl::nd_item<3> item_ct1) {
+            sycl::nd_item<1> item_ct1) {
         GreaterThan<T> select_op(compare);
-        block_pred<T, GreaterThan<T>, block_threads, items_per_thread>(
+        predicate<T, GreaterThan<T>, block_threads, items_per_thread>(
                 items, select_op, selection_flags, num_items, item_ct1);
     }
 
     template < typename T, int block_threads, int items_per_thread>
-    __dpct_inline__ void block_pred_and_gt(
+    __dpct_inline__ void predicate_and_gt (
             T (&items)[items_per_thread],
             T compare,
             int (&selection_flags)[items_per_thread],
             int num_items,
-            sycl::nd_item<3> item_ct1) {
+            sycl::nd_item<1> item_ct1) {
         GreaterThan<T> select_op(compare);
-        block_pred_and<T, GreaterThan<T>, block_threads, items_per_thread>(
+        predicate_and<T, GreaterThan<T>, block_threads, items_per_thread>(
                 items, select_op, selection_flags, num_items, item_ct1);
     }
 
     template < typename T, int block_threads, int items_per_thread>
-    __dpct_inline__ void block_pred_lte(
+    __dpct_inline__ void predicate_lte (
             T (&items)[items_per_thread],
             T compare,
             int (&selection_flags)[items_per_thread],
             int num_items,
-            sycl::nd_item<3> item_ct1 ) {
+            sycl::nd_item<1> item_ct1
+    )
+    {
         LessThanEq<T> select_op(compare);
-        block_pred<T, LessThanEq<T>, block_threads, items_per_thread>(
+        predicate<T, LessThanEq<T>, block_threads, items_per_thread>(
                 items, select_op, selection_flags, num_items, item_ct1);
     }
 
     template < typename T, int block_threads, int items_per_thread>
-    __dpct_inline__ void block_pred_and_lte(
+    __dpct_inline__ void predicate_and_lte (
             T (&items)[items_per_thread],
             T compare,
             int (&selection_flags)[items_per_thread],
             int num_items,
-            sycl::nd_item<3> item_ct1) {
+            sycl::nd_item<1> item_ct1
+    )
+    {
         LessThanEq<T> select_op(compare);
-        block_pred_and<T, LessThanEq<T>, block_threads, items_per_thread>(
+        predicate_and<T, LessThanEq<T>, block_threads, items_per_thread>(
                 items, select_op, selection_flags, num_items, item_ct1);
     }
 
     template < typename T, int block_threads, int items_per_thread>
     __dpct_inline__ void block_pred_gte(
-            T (&items)[items_per_thread],
-            T compare,
-            int (&selection_flags)[items_per_thread],
-            int num_items, sycl::nd_item<3> item_ct1) {
-        GreaterThanEq<T> select_op(compare);
-        block_pred<T, GreaterThanEq<T>, block_threads, items_per_thread>(
-                items, select_op, selection_flags, num_items, item_ct1);
-    }
-
-
-    template < typename T, int block_threads, int items_per_thread>
-    __dpct_inline__ void block_pred_gte(
-            T (&items)[items_per_thread],
-            T compare,
-            int (&selection_flags)[items_per_thread],
-            int num_items, sycl::nd_item<3> item_ct1) {
-        GreaterThanEq<T> select_op(compare);
-        
-        block_pred_and<T, GreaterThanEq<T>, block_threads, items_per_thread>(
-                items, select_op, selection_flags, num_items, item_ct1);
-    }
-
-    template < typename T, int block_threads, int items_per_thread>
-    __dpct_inline__ void block_pred_eq (
             T (&items)[items_per_thread],
             T compare,
             int (&selection_flags)[items_per_thread],
             int num_items, 
-            sycl::nd_item<3> item_ct1
+            sycl::nd_item<1> item_ct1
     ) 
     {
-        Eq<T> select_op(compare);
-        block_pred<T, Eq<T>, block_threads, items_per_thread>(
+        GreaterThanEq<T> select_op(compare);
+        predicate<T, GreaterThanEq<T>, block_threads, items_per_thread>(
                 items, select_op, selection_flags, num_items, item_ct1);
     }
 
 
     template < typename T, int block_threads, int items_per_thread>
-    __dpct_inline__ void block_pred_and_eq(
+    __dpct_inline__ void predicate_and_gte (
+            T (&items)[items_per_thread],
+            T compare,
+            int (&selection_flags)[items_per_thread],
+            int num_items, 
+            sycl::nd_item<1> item_ct1
+    ) 
+    {
+        GreaterThanEq<T> select_op(compare);
+        
+        predicate_and<T, GreaterThanEq<T>, block_threads, items_per_thread>(
+                items, select_op, selection_flags, num_items, item_ct1);
+    }
+
+    template < typename T, int block_threads, int items_per_thread>
+    __dpct_inline__ void predicate_eq (
+            T (&items)[items_per_thread],
+            T compare,
+            int (&selection_flags)[items_per_thread],
+            int num_items, 
+            sycl::nd_item<1> item_ct1
+    ) 
+    {
+        Eq<T> select_op(compare);
+        predicate<T, Eq<T>, block_threads, items_per_thread>(
+                items, select_op, selection_flags, num_items, item_ct1);
+    }
+
+
+    template < typename T, int block_threads, int items_per_thread>
+    __dpct_inline__ void predicate_and_eq (
             T (&items)[items_per_thread],
             T compare,
             int (&selection_flags)[items_per_thread],
             int num_items,
-            sycl::nd_item<3> item_ct1
+            sycl::nd_item<1> item_ct1
     ) 
     {
         Eq<T> select_op(compare);
         
-        block_pred_and<T, Eq<T>, block_threads, items_per_thread>(
+        predicate_and<T, Eq<T>, block_threads, items_per_thread>(
                 items, select_op, selection_flags, num_items, item_ct1);
     }
 
@@ -396,17 +406,17 @@ namespace crystal {
         int block_threads, 
         int items_per_thread
         >
-    __dpct_inline__ void block_pred_or_eq (
+    __dpct_inline__ void predicate_or_eq (
             T (&items)[items_per_thread],
             T compare,
             int (&selection_flags)[items_per_thread],
             int num_items,
-            sycl::nd_item<3> item_ct1 
+            sycl::nd_item<1> item_ct1 
     ) 
     {
         Eq<T> select_op(compare);
 
-        block_pred_or<T, Eq<T>, block_threads, items_per_thread>(
+        predicate_or<T, Eq<T>, block_threads, items_per_thread>(
                 items, select_op, selection_flags, num_items, item_ct1);
     }
 

@@ -18,7 +18,7 @@ using global_atomic_ref = sycl::atomic_ref <
 
 namespace crystal {
         template <typename K, int block_threads, int items_per_thread>
-        __dpct_inline__ void block_probe_direct_1 (
+        __dpct_inline__ void probe_direct_1 (
                 int tid, 
                 K (&items)[items_per_thread],
                 int (&selection_flags)[items_per_thread], K *ht,
@@ -36,7 +36,7 @@ namespace crystal {
         }
 
         template <typename K, int block_threads, int items_per_thread>
-        __dpct_inline__ void block_probe_direct_1 (
+        __dpct_inline__ void probe_direct_1 (
                 int tid,
                 K (&items)[items_per_thread],
                 int (&selection_flags)[items_per_thread], 
@@ -60,7 +60,7 @@ namespace crystal {
         }
 
         template <typename K, int block_threads, int items_per_thread>
-        __dpct_inline__ void block_probe_1 (
+        __dpct_inline__ void BlockProbeAndPHT_1 (
                 K (&items)[items_per_thread],
                 int (&selection_flags)[items_per_thread], 
                 K *ht, 
@@ -71,17 +71,17 @@ namespace crystal {
         ) 
         {
                 if ((block_threads * items_per_thread) == num_items) {
-                        block_probe_direct_1<K, block_threads, items_per_thread>(
+                        probe_direct_1<K, block_threads, items_per_thread>(
                                 item_ct1.get_local_id(0), items, selection_flags, ht, ht_len, keys_min);
                 } else {
-                        block_probe_direct_1<K, block_threads, items_per_thread>(
+                        probe_direct_1<K, block_threads, items_per_thread>(
                                 item_ct1.get_local_id(0), items, selection_flags, ht, ht_len, keys_min,
                                 num_items);
                 }
         }
 
         template <typename K, int block_threads, int items_per_thread>
-        __dpct_inline__ void block_probe_1(
+        __dpct_inline__ void BlockProbeAndPHT_1(
                 K (&items)[items_per_thread],
                 int (&selection_flags)[items_per_thread], 
                 K *ht, 
@@ -89,12 +89,12 @@ namespace crystal {
                 int num_items, sycl::nd_item<1> item_ct1
         ) 
         {
-          block_probe_1<K, block_threads, items_per_thread>(
+          BlockProbeAndPHT_1<K, block_threads, items_per_thread>(
                 items, selection_flags, ht, ht_len, 0, item_ct1, num_items);
         }
 
         template <typename K, typename V, int block_threads, int items_per_thread>
-        __dpct_inline__ void block_probe_direct_2 (
+        __dpct_inline__ void probe_direct_2 (
                 int tid, 
                 K (&keys)[items_per_thread], 
                 V (&res)[items_per_thread],
@@ -120,7 +120,7 @@ namespace crystal {
         }
 
         template <typename K, typename V, int block_threads, int items_per_thread>
-        __dpct_inline__ void block_probe_direct_2 (
+        __dpct_inline__ void probe_direct_2 (
                 int tid, K (&items)[items_per_thread],
                 V (&res)[items_per_thread],
                 int (&selection_flags)[items_per_thread], 
@@ -144,7 +144,7 @@ namespace crystal {
         }
 
         template <typename K, typename V, int block_threads, int items_per_thread>
-        __dpct_inline__ void block_probe_2(
+        __dpct_inline__ void probe_2(
                 K (&keys)[items_per_thread], 
                 V (&res)[items_per_thread],
                 int (&selection_flags)[items_per_thread], 
@@ -156,18 +156,18 @@ namespace crystal {
         ) 
         {
                 if ((block_threads * items_per_thread) == num_items) {
-                        block_probe_direct_2<K, V, block_threads, items_per_thread>(
+                        probe_direct_2<K, V, block_threads, items_per_thread>(
                                 item_ct1.get_local_id(0), keys, res, selection_flags, ht, ht_len,
                                 keys_min);
                 } else {
-                        block_probe_direct_2<K, V, block_threads, items_per_thread>(
+                        probe_direct_2<K, V, block_threads, items_per_thread>(
                                 item_ct1.get_local_id(0), keys, res, selection_flags, ht, ht_len,
                                 keys_min, num_items);
                 }
         }
 
         template <typename K, typename V, int block_threads, int items_per_thread>
-        __dpct_inline__ void block_probe_2(
+        __dpct_inline__ void probe_2(
                 K (&keys)[items_per_thread], 
                 V (&res)[items_per_thread],
                 int (&selection_flags)[items_per_thread], 
@@ -176,12 +176,12 @@ namespace crystal {
                 int num_items, sycl::nd_item<1> item_ct1
         ) 
         {
-           block_probe_2<K, V, block_threads, items_per_thread>(
+           probe_2<K, V, block_threads, items_per_thread>(
                 keys, res, selection_flags, ht, ht_len, 0, num_items, item_ct1);
         }
 
         template <typename K, int block_threads, int items_per_thread>
-        __dpct_inline__ void block_build_direct_selective(
+        __dpct_inline__ void build_direct_selective(
                 int tid, K (&keys)[items_per_thread],
                 int (&selection_flags)[items_per_thread], 
                 K *ht,
@@ -199,7 +199,7 @@ namespace crystal {
         }
 
         template <typename K, int block_threads, int items_per_thread>
-        __dpct_inline__ void block_build_direct_selective(
+        __dpct_inline__ void build_direct_selective(
                 int tid, 
                 K (&items)[items_per_thread],
                 int (&selection_flags)[items_per_thread], 
@@ -222,7 +222,7 @@ namespace crystal {
         }
 
         template <typename K, int block_threads, int items_per_thread>
-        __dpct_inline__ void block_build_selective_1(
+        __dpct_inline__ void build_selective_1(
                 K (&keys)[items_per_thread], 
                 int (&selection_flags)[items_per_thread],
                 K *ht, 
@@ -234,17 +234,17 @@ namespace crystal {
         {
 
           if ((block_threads * items_per_thread) == num_items) {
-                block_build_direct_selective<K, block_threads, items_per_thread>(
+                build_direct_selective<K, block_threads, items_per_thread>(
                         item_ct1.get_local_id(0), keys, selection_flags, ht, ht_len, keys_min);
           } else {
-                block_build_direct_selective<K, block_threads, items_per_thread>(
+                build_direct_selective<K, block_threads, items_per_thread>(
                         item_ct1.get_local_id(0), keys, selection_flags, ht, ht_len, keys_min,
                         num_items);
           }
         }
 
         template <typename K, int block_threads, int items_per_thread>
-        __dpct_inline__ void block_build_selective_1(
+        __dpct_inline__ void build_selective_1(
                 K (&keys)[items_per_thread],
                 int (&selection_flags)[items_per_thread], 
                 K *ht,
@@ -253,12 +253,12 @@ namespace crystal {
                 sycl::nd_item<1> item_ct1
         ) 
         {
-          block_build_selective_1<K, block_threads, items_per_thread>(
+          build_selective_1<K, block_threads, items_per_thread>(
                 keys, selection_flags, ht, ht_len, 0, item_ct1, num_items);
         }
 
         template <typename K, typename V, int block_threads, int items_per_thread>
-        __dpct_inline__ void block_build_selective_direct_1(
+        __dpct_inline__ void build_selective_direct_1(
                 int tid, 
                 K (&keys)[items_per_thread], 
                 V (&res)[items_per_thread],
@@ -282,7 +282,7 @@ namespace crystal {
         }
 
         template <typename K, typename V, int block_threads, int items_per_thread>
-        __dpct_inline__ void block_build_selective_direct_1(
+        __dpct_inline__ void build_selective_direct_1(
                 int tid, K (&keys)[items_per_thread],
                 V (&res)[items_per_thread],
                 int (&selection_flags)[items_per_thread], 
@@ -306,7 +306,7 @@ namespace crystal {
         }
 
         template <typename K, typename V, int block_threads, int items_per_thread>
-        __dpct_inline__ void block_build_selective_2(
+        __dpct_inline__ void build_selective_2(
                 K (&keys)[items_per_thread], 
                 V (&res)[items_per_thread],
                 int (&selection_flags)[items_per_thread], 
@@ -318,18 +318,18 @@ namespace crystal {
         ) 
         {
           if ((block_threads * items_per_thread) == num_items) {
-                block_build_selective_direct_1<K, V, block_threads, items_per_thread>(
+                build_selective_direct_1<K, V, block_threads, items_per_thread>(
                         item_ct1.get_local_id(0), keys, res, selection_flags, ht, ht_len,
                         keys_min);
           } else {
-                block_build_selective_direct_1<K, V, block_threads, items_per_thread>(
+                build_selective_direct_1<K, V, block_threads, items_per_thread>(
                         item_ct1.get_local_id(0), keys, res, selection_flags, ht, ht_len,
                         keys_min, num_items);
           }
         }
 
         template <typename K, typename V, int block_threads, int items_per_thread>
-        __dpct_inline__ void block_build_selective_2(
+        __dpct_inline__ void build_selective_2(
                 K (&keys)[items_per_thread],
                 V (&res)[items_per_thread],
                 int (&selection_flags)[items_per_thread],
@@ -339,7 +339,7 @@ namespace crystal {
                 sycl::nd_item<1> item_ct1
         ) 
         {
-          block_build_selective_2<K, V, block_threads, items_per_thread>(
+          build_selective_2<K, V, block_threads, items_per_thread>(
                 keys, res, selection_flags, ht, ht_len, 0, num_items, item_ct1);
         }        
 } // namespace crystal 

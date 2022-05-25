@@ -7,8 +7,8 @@
 
 namespace crystal {
   
-    template < ypename T, int block_threads, int items_per_thread>
-    __dpct_inline__ void block_store_direct (
+    template < typename T, int block_threads, int items_per_thread>
+    __dpct_inline__ void store_direct (
             int tid, 
             T *block_itr,
             T (&items)[items_per_thread]
@@ -25,7 +25,7 @@ namespace crystal {
 
     
     template <typename T, int block_threads, int items_per_thread>
-    __dpct_inline__ void block_store_direct(
+    __dpct_inline__ void store_direct(
             int tid, 
             T *block_itr,
             T (&items)[items_per_thread],
@@ -44,7 +44,7 @@ namespace crystal {
 
 
     template <typename T, int block_threads, int items_per_thread>
-    __dpct_inline__ void block_store (
+    __dpct_inline__ void store (
             T *out,
             T (&items)[items_per_thread],
             int num_items,
@@ -54,10 +54,10 @@ namespace crystal {
         T* block_itr = out;
 
         if ((block_threads * items_per_thread) == num_items) {
-            block_store_direct<T, block_threads, items_per_thread>(
+            store_direct<T, block_threads, items_per_thread>(
                     item_ct1.get_local_id(0), block_itr, items);
         } else {
-            block_store_direct<T, block_threads, items_per_thread>(
+            store_direct<T, block_threads, items_per_thread>(
                     item_ct1.get_local_id(0), block_itr, items, num_items);
         }
     }

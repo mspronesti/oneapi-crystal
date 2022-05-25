@@ -8,7 +8,7 @@
 namespace crystal {
 
     template <typename T, int block_threads, int items_per_thread>
-    SYCL_EXTERNAL __dpct_inline__ void block_load_direct (
+    SYCL_EXTERNAL __dpct_inline__ void load_direct (
             const unsigned int tid,
             T *block_itr,
             T (&items)[items_per_thread]
@@ -23,7 +23,7 @@ namespace crystal {
     }
 
     template <typename T, int block_threads, int items_per_thread>
-    SYCL_EXTERNAL __dpct_inline__ void block_load_direct (
+    SYCL_EXTERNAL __dpct_inline__ void load_direct (
             const unsigned int tid,
             T *block_itr,
             T (&items)[items_per_thread],
@@ -41,7 +41,7 @@ namespace crystal {
     }
 
     template <typename T, int block_threads, int items_per_thread>
-    __dpct_inline__ void block_load(
+    __dpct_inline__ void load(
             T *inp,
             T (&items)[items_per_thread],
             int num_items,
@@ -51,10 +51,10 @@ namespace crystal {
         T* block_itr = inp;
 
         if ((block_threads * items_per_thread) == num_items) {
-            block_load_direct<T, block_threads, items_per_thread>(
+            load_direct<T, block_threads, items_per_thread>(
                     item_ct1.get_local_id(0), block_itr, items);
         } else {
-            block_load_direct<T, block_threads, items_per_thread>(
+            load_direct<T, block_threads, items_per_thread>(
                     item_ct1.get_local_id(0), block_itr, items, num_items);
         }
     }

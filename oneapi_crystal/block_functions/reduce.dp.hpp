@@ -13,7 +13,7 @@ namespace crystal {
             int block_threads,
             int items_per_thread
             >
-    __dpct_inline__ T block_sum (T item, T *shared, sycl::nd_item<1> item_ct1) 
+    __dpct_inline__ T reduce (T item, T *shared, sycl::nd_item<1> item_ct1) 
     {
 
         item_ct1.barrier();
@@ -42,7 +42,7 @@ namespace crystal {
         val = (item_ct1.get_local_id(0) < item_ct1.get_local_range().get(0) / warp_size) ?
                 shared[lane] : 0;
 
-        // Calculate sum of sums
+        // Calculate reduce of sums
         if (wid == 0) {
             for (int offset = 16; offset > 0; offset /= 2)
                 //__shfl_down_sync(0xffffffff, val, offset);
@@ -53,7 +53,7 @@ namespace crystal {
     }
 
     template < typename T, int block_threads, int items_per_thread >
-    __dpct_inline__ T block_sum(
+    __dpct_inline__ T reduce(
             T (&items)[items_per_thread],
             T *shared,
             sycl::nd_item<1> item_ct1
@@ -65,7 +65,7 @@ namespace crystal {
         for (int item = 0; item < items_per_thread; item++) {
             thread_sum += items[item];
         }
-        return block_sum(thread_sum, shared, item_ct1);
+        return reduce(thread_sum, shared, item_ct1);
     }   
 
 } //namespace crystal
