@@ -19,13 +19,7 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 add_subdirectory (oneapi_crystal)
 
-# Set this to 'ON' to compile the examples
-option(BUILD_EXAMPLES "Build the examples for the operators" OFF)
-if(BUILD_EXAMPLES)
-    add_subdirectory(examples)
-endif()
-unset (BUILD_EXAMPLES CACHE)
-
+# Set this to 'ON' to compile the queries
 option(BUILD_QUERIES "Build the queries" OFF)
 if(BUILD_QUERIES)
     add_subdirectory(queries)
