@@ -15,7 +15,7 @@ Above you can find a few details on how to run this code on Intel CPUs and GPUs 
 ```
 Now you have an interactive shell on a CPU node.
 
-### Intel® UHD Graphics P630:
+### Intel® UHD Graphics P630 (iGPU):
 
 ```shell
 >> cd oneapi_crystal
@@ -23,6 +23,13 @@ Now you have an interactive shell on a CPU node.
 ```
 Now you have an interactive shell on a (integrated) GPU node.
 
+### Intel® Iris® Xe MAX Graphics (dGPU):
+
+```shell
+>> cd oneapi_crystal
+>> qsub -I -l nodes=1:iris_xe_max:ppn=2 -d .
+```
+Now you have an interactive shell on a (discrete) GPU node.
 
 ## Run the queries
 
@@ -45,8 +52,20 @@ python util.py ssb <SF> transform
 configure the benchmark settings
 
 ```bash
-cd queries/
+vi queries/ssb_utils.h
 # edit BASE_PATH in ssb_utils.h with the location
 # of oneapi_crystal 
+```
+
+now build the queries
+
+```bash
+make all_queries
+```
+
+and run, say q11
+
+```
+./build/q11
 ```
 
