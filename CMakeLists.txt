@@ -1,7 +1,11 @@
 cmake_minimum_required (VERSION 3.4)
 project (oneAPI-crystal)
 
-set(CMAKE_CXX_COMPILER "dpcpp")
+if (${CMAKE_HOST_SYSTEM_NAME} STREQUAL "Windows")
+    set(CMAKE_CXX_COMPILER "dpcpp-cl")
+else()
+    set(CMAKE_CXX_COMPILER "dpcpp")
+endif()
 
 # Set default build type to RelWithDebInfo if not specified
 if (NOT CMAKE_BUILD_TYPE)
