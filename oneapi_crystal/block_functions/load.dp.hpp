@@ -17,8 +17,8 @@ namespace crystal {
         T* thread_itr = block_itr + tid;
 
         #pragma unroll
-        for (int item = 0; item < items_per_thread; item++) {
-            items[item] = thread_itr[item * block_threads];
+        for (int i = 0; i < items_per_thread; i++) {
+            items[i] = thread_itr[i * block_threads];
         }
     }
 
@@ -33,9 +33,9 @@ namespace crystal {
         T* thread_itr = block_itr + tid;
 
         #pragma unroll
-        for (int item = 0; item < items_per_thread; item++) {
-            if (tid + (item * block_threads) < num_items) {
-                items[item] = thread_itr[item * block_threads];
+        for (int i = 0; i < items_per_thread; i++) {
+            if (tid + (i * block_threads) < num_items) {
+                items[i] = thread_itr[i * block_threads];
             }
         }
     }

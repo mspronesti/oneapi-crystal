@@ -62,8 +62,8 @@ namespace crystal {
         T thread_sum = 0;
 
         #pragma unroll
-        for (int item = 0; item < items_per_thread; item++) {
-            thread_sum += items[item];
+        for (int i = 0; i < items_per_thread; ++i) {
+            thread_sum += items[i];
         }
         return reduce(thread_sum, shared, item_ct1);
     }   
