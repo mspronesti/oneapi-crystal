@@ -8,6 +8,7 @@
 #include "ssb_utils.h"
 #include "../oneapi_crystal/tools/queue_helpers.hpp"
 #include "../oneapi_crystal/tools/duration_logger.hpp"
+#include "../oneapi_crystal/utils/atomic.hpp"
 
 #define TILE_SIZE block_threads * items_per_thread
 
@@ -63,16 +64,14 @@ void device_select_if(
         sum += items[item] * items2[item];
   }
 
-  item_ct1.barrier(sycl::access::fence_space::local_space);
+  //item_ct1.barrier(sycl::access::fence_space::local_space);
 
   unsigned long long aggregate = sycl::reduce_over_group(item_ct1.get_group(), sum, sycl::plus<>());
 
-  item_ct1.barrier(sycl::access::fence_space::local_space);
+  //item_ct1.barrier(sycl::access::fence_space::local_space);
 
   if (item_ct1.get_local_id(0) == 0) {
-    sycl::atomic<unsigned long long>(
-        sycl::global_ptr<unsigned long long>(revenue))
-        .fetch_add(aggregate);
+    atomicAdd(*revenue, aggregate);
   }
 }
 

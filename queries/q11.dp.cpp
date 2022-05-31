@@ -9,6 +9,7 @@
 #include "ssb_utils.h"
 #include "../oneapi_crystal/tools/queue_helpers.hpp"
 #include "../oneapi_crystal/tools/duration_logger.hpp"
+#include "../oneapi_crystal/utils/atomic.hpp"
 
 #define TILE_SIZE block_threads * items_per_thread
 
@@ -62,17 +63,10 @@ void query_kernel (
         sum += items[item] * items2[item];
   }
 
-  item_ct1.barrier();
-
-  //unsigned long long aggregate = reduce<long long, block_threads, items_per_thread>(sum, (long long*)buffer, item_ct1);
   unsigned long long aggregate = sycl::reduce_over_group(item_ct1.get_group(), sum, sycl::plus<>());
 
-  item_ct1.barrier();
-
   if (item_ct1.get_local_id(0) == 0) {
-    sycl::atomic<unsigned long long>(
-        sycl::global_ptr<unsigned long long>(revenue))
-        .fetch_add(aggregate);
+    atomicAdd(*revenue, aggregate);
   }
 }
 

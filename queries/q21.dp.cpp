@@ -70,10 +70,8 @@ void probe_kernel (
         int hash = (brand[ITEM] * 7 +  (year[ITEM] - 1992)) % ((1998-1992+1) * (5*5*40));
         res[hash * 4] = year[ITEM];
         res[hash * 4 + 1] = brand[ITEM];
-        sycl::atomic<unsigned long long>(
-            sycl::global_ptr<unsigned long long>(
-                reinterpret_cast<unsigned long long *>(&res[hash * 4 + 2])))
-            .fetch_add((long long)(revenue[ITEM]));
+
+        atomicAdd(res[hash * 4 + 2], revenue[ITEM]);
       }
     }
   }

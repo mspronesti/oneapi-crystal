@@ -5,32 +5,10 @@
 #include <CL/sycl.hpp>
 #include <dpct/dpct.hpp>
 #include <CL/sycl/accessor.hpp>
+#include "oneapi_crystal/utils/atomic.hpp"
 
 #define HASH(X,Y,Z) ((X-Z) % Y)
 
-/**
- * @brief Sycl version of the atomiCAS function 
- *        natively existing in cuda
- *        Performs atomically the following comparison and
- *        assignment: 
- *             *addr = *addr == expected ?  desired : *addr;
- * @returns the old value at addr
- */
-template <typename T, sycl::access::address_space 
-          addressSpace = sycl::access::address_space::global_space>
-T atomicCAS (
-    T *addr, 
-    T expected, 
-    T desired,
-    sycl::memory_order success = sycl::memory_order::relaxed,
-    sycl::memory_order fail = sycl::memory_order::relaxed
-)
-{
-  // add a pair of parentheses to declare a variable
-  sycl::atomic<T, addressSpace> obj((sycl::multi_ptr<T, addressSpace>(addr)));
-  obj.compare_exchange_strong(expected, desired, success, fail);
-  return expected;
-}
 
 
 namespace crystal {
