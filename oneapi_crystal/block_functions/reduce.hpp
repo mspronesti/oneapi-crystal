@@ -3,7 +3,6 @@
 #pragma once 
 
 #include <CL/sycl.hpp>
-#include <dpct/dpct.hpp>
 
 namespace crystal {
 
@@ -13,15 +12,10 @@ namespace crystal {
             int block_threads,
             int items_per_thread
             >
-    __dpct_inline__ T reduce (T item, T *shared, sycl::nd_item<1> item_ct1) 
+    inline T reduce (T item, T *shared, sycl::nd_item<1> item_ct1) 
     {
 
         item_ct1.barrier();
-
-        /**
-         * ADDED BY ME BUT NOT USED... TO CHECK CORRECTNESS
-         * **/
-
         T val = item;
 
         const int warp_size = item_ct1.get_sub_group().dimensions;
@@ -31,7 +25,7 @@ namespace crystal {
 
         for (int offset = 16; offset > 0; offset /= 2) {
             //__shfl_down_sync(0xffffffff, val, offset);
-            val += item_ct1.get_sub_group().template shuffle_down(val, offset);
+            val += item_ct1.get_sub_group().shuffle_down(val, offset);
         }
         if (lane == 0) {
             shared[wid] = val;
@@ -46,14 +40,14 @@ namespace crystal {
         if (wid == 0) {
             for (int offset = 16; offset > 0; offset /= 2)
                 //__shfl_down_sync(0xffffffff, val, offset);
-                val += item_ct1.get_sub_group().template shuffle_down(val, offset);
+                val += item_ct1.get_sub_group().shuffle_down(val, offset);
         }
 
         return val;
     }
 
     template < typename T, int block_threads, int items_per_thread >
-    __dpct_inline__ T reduce(
+    inline T reduce(
             T (&items)[items_per_thread],
             T *shared,
             sycl::nd_item<1> item_ct1

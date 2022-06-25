@@ -1,10 +1,7 @@
 #include <CL/sycl.hpp>
-#include <dpct/dpct.hpp>
 #include <iostream>
 #include <stdio.h>
 #include <oneapi/mkl.hpp>
-#include <oneapi/mkl/rng/device.hpp>
-#include <dpct/rng_utils.hpp>
 
 #include <oneapi_crystal/crystal.hpp>
 
@@ -18,12 +15,13 @@
 using namespace std;
 using namespace crystal;
 
+
 template<int block_threads, int items_per_thread>
 void probe(
     int* lo_orderdate, 
     int* lo_partkey, 
     int* lo_custkey, 
-    int* lo_suppkey,
+    int* lo_suppkey, 
     int* lo_revenue, 
     int* lo_supplycost, 
     int lo_len,
@@ -42,7 +40,7 @@ void probe(
   // Load a segment of consecutive items that are blocked across threads
   int items[items_per_thread];
   int selection_flags[items_per_thread];
-  int category[items_per_thread];
+  int c_nation[items_per_thread];
   int s_nation[items_per_thread];
   int year[items_per_thread];
   int revenue[items_per_thread];
@@ -58,16 +56,14 @@ void probe(
   init_flags<block_threads, items_per_thread>(selection_flags);
 
   load<int, block_threads, items_per_thread>(lo_suppkey + tile_offset, items, num_tile_items, item_ct1);
-  probe_2<int, int, block_threads, items_per_thread>(items, s_nation, selection_flags,
-      ht_s, s_len, num_tile_items, item_ct1);
+  probe_1<int, block_threads, items_per_thread>(items, selection_flags, ht_s, s_len, num_tile_items, item_ct1);
 
   load<int, block_threads, items_per_thread>(lo_custkey + tile_offset, items, num_tile_items, item_ct1);
-  probe_1<int, block_threads, items_per_thread>(items, selection_flags, ht_c, c_len, num_tile_items, item_ct1);
+  probe_2<int, int, block_threads, items_per_thread>(items, c_nation, selection_flags,
+      ht_c, c_len, num_tile_items, item_ct1);
 
   load<int, block_threads, items_per_thread>(lo_partkey + tile_offset, items, num_tile_items, item_ct1);
-  probe_2<int, int, block_threads, items_per_thread>(items, category, selection_flags,
-      ht_p, p_len, num_tile_items, item_ct1);
-
+  probe_1<int, block_threads, items_per_thread>(items, selection_flags, ht_p, p_len, num_tile_items, item_ct1);
 
   load<int, block_threads, items_per_thread>(lo_orderdate + tile_offset, items, num_tile_items, item_ct1);
   probe_2<int, int, block_threads, items_per_thread>(items, year, selection_flags,
@@ -80,15 +76,13 @@ void probe(
   for (int ITEM = 0; ITEM < items_per_thread; ++ITEM) {
     if (item_ct1.get_local_id(0) + (block_threads * ITEM) < num_tile_items) {
       if (selection_flags[ITEM]) {
-        /*int hash = (category[ITEM] * 7 * 25 + s_nation[ITEM] * 7 +  (year[ITEM] - 1992)) % ((1998-1992+1) * 25 * 55);*/
-        int hash = ((year[ITEM] - 1992) * 25 * 25 + s_nation[ITEM] * 25 + category[ITEM]) % ((1998-1992+1) * 25 * 25);
-        res[hash * 6] = year[ITEM];
-        res[hash * 6 + 1] = s_nation[ITEM];
-        res[hash * 6 + 2] = category[ITEM];
+        int hash = (c_nation[ITEM] * 7 +  (year[ITEM] - 1992)) % ((1998-1992+1) * 25);
+        res[hash * 4] = year[ITEM];
+        res[hash * 4 + 1] = c_nation[ITEM];
         
         atomicAdd(
-            *reinterpret_cast<unsigned long long *>(&res[hash * 6 + 4]),
-            (unsigned long long)((long long)(revenue[ITEM] - items[ITEM]))
+            *reinterpret_cast<unsigned long long *>(&res[hash * 4 + 2]),
+            (unsigned long long)(revenue[ITEM] - items[ITEM])
         );
       }
     }
@@ -96,15 +90,8 @@ void probe(
 }
 
 template<int block_threads, int items_per_thread>
-void build_hashtable_c (
-    int *filter_col, 
-    int *dim_key, 
-    int num_tuples, 
-    int *hash_table, 
-    int num_slots,
-    sycl::nd_item<1> item_ct1
-)
-{
+void build_hashtable_s(int *filter_col, int *dim_key, int num_tuples, int *hash_table, int num_slots,
+                       sycl::nd_item<1> item_ct1) {
   int items[items_per_thread];
   int selection_flags[items_per_thread];
 
@@ -127,16 +114,14 @@ void build_hashtable_c (
 template<int block_threads, int items_per_thread>
 void build_hashtable_p(
     int *filter_col, 
-    int *dim_key,
-    int* dim_val, 
+    int *dim_key, 
     int num_tuples, 
     int *hash_table, 
     int num_slots,
     sycl::nd_item<1> item_ct1
-)
+) 
 {
   int items[items_per_thread];
-  int items2[items_per_thread];
   int selection_flags[items_per_thread];
 
   int tile_offset = item_ct1.get_group(0) * TILE_SIZE;
@@ -152,21 +137,20 @@ void build_hashtable_p(
   predicate_or_eq<int, block_threads, items_per_thread>(items, 1, selection_flags, num_tile_items, item_ct1);
 
   load<int, block_threads, items_per_thread>(dim_key + tile_offset, items, num_tile_items, item_ct1);
-  load<int, block_threads, items_per_thread>(dim_val + tile_offset, items2, num_tile_items, item_ct1);
-  build_selective_2<int, int, block_threads, items_per_thread>(items, items2, selection_flags, 
+  build_selective_1<int, block_threads, items_per_thread>(items, selection_flags, 
       hash_table, num_slots, num_tile_items, item_ct1);
 }
 
-template<int block_threads, int items_per_thread>
-void build_hashtable_s(
-    int* filter_col, 
+template <int block_threads, int items_per_thread>
+SYCL_EXTERNAL void build_hashtable_c(
+    int *filter_col, 
     int *dim_key, 
-    int* dim_val, 
-    int num_tuples, 
+    int *dim_val, 
+    int num_tuples,
     int *hash_table, 
-    int num_slots,
+    int num_slots, 
     sycl::nd_item<1> item_ct1
-)
+) 
 {
   int items[items_per_thread];
   int items2[items_per_thread];
@@ -189,17 +173,10 @@ void build_hashtable_s(
       hash_table, num_slots, num_tile_items, item_ct1);
 }
 
-template<int block_threads, int items_per_thread>
-void build_hashtable_d(
-    int *dim_key, 
-    int *dim_val, 
-    int num_tuples, 
-    int *hash_table, 
-    int num_slots, 
-    int val_min,
-    sycl::nd_item<1> item_ct1
-)
-{
+template <int block_threads, int items_per_thread>
+SYCL_EXTERNAL void build_hashtable_d(int *dim_key, int *dim_val, int num_tuples,
+                                     int *hash_table, int num_slots,
+                                     int val_min, sycl::nd_item<1> item_ct1) {
   int items[items_per_thread];
   int items2[items_per_thread];
   int selection_flags[items_per_thread];
@@ -213,12 +190,9 @@ void build_hashtable_d(
   }
 
   init_flags<block_threads, items_per_thread>(selection_flags);
-  load<int, block_threads, items_per_thread>(dim_val + tile_offset, items, num_tile_items, item_ct1);
-  predicate_eq<int, block_threads, items_per_thread>(items, 1997, selection_flags, num_tile_items, item_ct1);
-  predicate_or_eq<int, block_threads, items_per_thread>(items, 1998, selection_flags, num_tile_items, item_ct1);
-
-  load<int, block_threads, items_per_thread>(dim_key + tile_offset, items2, num_tile_items, item_ct1);
-  build_selective_2<int, int, block_threads, items_per_thread>(items2, items, selection_flags,
+  load<int, block_threads, items_per_thread>(dim_key + tile_offset, items, num_tile_items, item_ct1);
+  load<int, block_threads, items_per_thread>(dim_val + tile_offset, items2, num_tile_items, item_ct1);
+  build_selective_2<int, int, block_threads, items_per_thread>(items, items2, selection_flags,
       hash_table, num_slots, val_min, num_tile_items, item_ct1);
 }
 
@@ -235,28 +209,24 @@ void runQuery(
     int *d_year, 
     int d_len, 
     int *p_partkey,
-    int *p_mfgr,
-    int *p_category, 
+    int *p_mfgr, 
     int p_len, 
-    int *s_suppkey,
+    int *s_suppkey, 
     int *s_region, 
-    int *s_nation, 
-    int s_len, 
-    int *c_custkey,
+    int s_len,
+    int *c_custkey, 
     int *c_region, 
+    int *c_nation, 
     int c_len
-) 
+)
 {
   try {
-
     chrono::high_resolution_clock::time_point st, finish;
     st = chrono::high_resolution_clock::now();
-
 
     int *ht_d, *ht_c, *ht_s, *ht_p;
     int d_val_len = 19981230 - 19920101 + 1;
     
-    // allocating 
     ht_d = (int*)malloc_device(2 * d_val_len * sizeof(int), q);
     ht_s = (int*)malloc_device(2 * s_len * sizeof(int), q);
     ht_c = (int*)malloc_device(2 * c_len * sizeof(int), q);
@@ -268,63 +238,68 @@ void runQuery(
     q.memset(ht_p, 0, 2 * p_len * sizeof(int)).wait();
 
     int tile_items = 128*4;
-
     int num_blocks_s = (s_len + tile_items - 1)/tile_items;
+    
     q.submit([&](sycl::handler &h){
 
         h.parallel_for<class build_s>(sycl::nd_range<1>({static_cast<size_t>(num_blocks_s * 128)},{128}),
             [=](sycl::nd_item<1>  it) {
-            build_hashtable_s<128,4>(s_region, s_suppkey, s_nation, s_len, ht_s,
-                                 s_len, it);
+            build_hashtable_s<128,4>(s_region, s_suppkey, s_len, ht_s, s_len, it);
             });
 
     });
+
+    int* s_res = new int[s_len * 2];
+    q.memcpy(s_res, ht_s, s_len * 2 * sizeof(int)).wait();
     
     int num_blocks_c = (c_len + tile_items - 1)/tile_items;
     q.submit([&](sycl::handler &h){
 
         h.parallel_for<class build_c>(sycl::nd_range<1>({static_cast<size_t>(num_blocks_c * 128)},{128}),
             [=](sycl::nd_item<1>  it) {
-            build_hashtable_c<128,4>(c_region, c_custkey, c_len, ht_c,
+            build_hashtable_c<128,4>(c_region, c_custkey, c_nation, c_len, ht_c,
                                     c_len, it);
             });
 
     });
 
 
-       
+    int* c_res = new int[c_len * 2];
+    q.memcpy(c_res, ht_c, c_len * 2 * sizeof(int)).wait();
+   
     int num_blocks_p = (p_len + tile_items - 1)/tile_items;
     q.submit([&](sycl::handler &h){
 
         h.parallel_for<class build_p>(sycl::nd_range<1>({static_cast<size_t>(num_blocks_p * 128)},{128}),
             [=](sycl::nd_item<1>  it) {
-             build_hashtable_p<128, 4>(p_mfgr, p_partkey, p_category, p_len, ht_p,
-                                    p_len, it);
+             build_hashtable_p<128, 4>(p_mfgr, p_partkey, p_len, ht_p, p_len, it);
             });
 
     });
+   
+
+    int* p_res = new int[p_len * 2];
+    q.memcpy(p_res, ht_p, p_len * 2 * sizeof(int)).wait();
 
     int d_val_min = 19920101;
-    
     int num_blocks_d = (d_len + tile_items - 1)/tile_items;
     q.submit([&](sycl::handler &h){
 
         h.parallel_for<class build_d>(sycl::nd_range<1>({static_cast<size_t>(num_blocks_d * 128)}, {128}),
             [=](sycl::nd_item<1>  it) {
-            build_hashtable_d<128,4>(d_datekey, d_year, d_len, ht_d, d_val_len,
-                                    d_val_min, it);
+            build_hashtable_d<128,4>(d_datekey, d_year, d_len, ht_d, d_val_len, d_val_min, it);
             });
 
     });
-
+ 
     int *res;
-    int res_size = ((1998-1992+1) * 25 * 25);
-    int ht_entries = 6;
+    int res_size = ((1998-1992+1) * 25);
+    int ht_entries = 4; // int,int,long long
     int res_array_size = res_size * ht_entries;
-    
     
     res = (int*)malloc_device(res_array_size * sizeof(int), q);
     q.memset(res, 0, res_array_size * sizeof(int)).wait();
+    
 
     int num_blocks_lo = (lo_len + tile_items - 1)/tile_items;
     // Run
@@ -339,18 +314,18 @@ void runQuery(
 
     }).wait();
 
+
     int* h_res = new int[res_array_size];
     q.memcpy(h_res, res, res_array_size * sizeof(int)).wait();
-
-
+    
     finish = chrono::high_resolution_clock::now();
     std::chrono::duration<double> diff = finish - st;
 
     cout << "Result:" << endl;
     int res_count = 0;
     for (int i=0; i<res_size; i++) {
-        if (h_res[6*i] != 0) {
-        cout << h_res[6*i] << " " << h_res[6*i + 1] << " " << h_res[6*i + 2] << " " << reinterpret_cast<unsigned long long*>(&h_res[6*i + 4])[0] << endl;
+        if (h_res[4*i] != 0) {
+        cout << h_res[4*i] << " " << h_res[4*i + 1] << " " << reinterpret_cast<unsigned long long*>(&h_res[4*i + 2])[0]  << endl;
         res_count += 1;
         }
     }
@@ -358,27 +333,27 @@ void runQuery(
     cout << "Res Count: " << res_count << endl;
     cout << "Time Taken Total: " << diff.count() * 1000 << endl;
 
+    // freeing memory
     delete[] h_res;
+
     sycl::free(res, q);
     sycl::free(ht_d, q);
     sycl::free(ht_p, q);
     sycl::free(ht_s, q);
     sycl::free(ht_c, q);
-
   }
   catch (sycl::exception const &exc) {
     std::cerr << exc.what() << "Exception caught at file:" << __FILE__
                 << ", line:" << __LINE__ << std::endl;
     std::exit(1);
   }
+} 
 
-}
 /**
  * Main
  */
 int main(int argc, char **argv) try {
-  dpct::device_ext &dev = dpct::get_current_device();
-  auto q = try_get_queue_with_dev(dev);
+  auto q = try_get_queue(sycl::default_selector{});
 
   // device
   auto dev_name = q.get_device().get_info<sycl::info::device::name>();
@@ -398,14 +373,13 @@ int main(int argc, char **argv) try {
 
   int *h_s_suppkey = loadColumn<int>("s_suppkey", S_LEN);
   int *h_s_region = loadColumn<int>("s_region", S_LEN);
-  int *h_s_nation = loadColumn<int>("s_nation", S_LEN);
 
   int *h_p_partkey = loadColumn<int>("p_partkey", P_LEN);
   int *h_p_mfgr = loadColumn<int>("p_mfgr", P_LEN);
-  int *h_p_category = loadColumn<int>("p_category", P_LEN);
 
   int *h_c_custkey = loadColumn<int>("c_custkey", C_LEN);
   int *h_c_region = loadColumn<int>("c_region", C_LEN);
+  int *h_c_nation = loadColumn<int>("c_nation", C_LEN);
 
   cout << "** LOADED DATA **" << endl;
 
@@ -421,24 +395,23 @@ int main(int argc, char **argv) try {
 
   int *d_p_partkey = load_to_device<int>(h_p_partkey, P_LEN, q);
   int *d_p_mfgr = load_to_device<int>(h_p_mfgr, P_LEN, q);
-  int *d_p_category = load_to_device<int>(h_p_category, P_LEN, q);
 
   int *d_s_suppkey = load_to_device<int>(h_s_suppkey, S_LEN, q);
   int *d_s_region = load_to_device<int>(h_s_region, S_LEN, q);
-  int *d_s_nation = load_to_device<int>(h_s_nation, S_LEN, q);
 
   int *d_c_custkey = load_to_device<int>(h_c_custkey, C_LEN, q);
   int *d_c_region = load_to_device<int>(h_c_region, C_LEN, q);
+  int *d_c_nation = load_to_device<int>(h_c_nation, C_LEN, q);
 
   cout << "** LOADED DATA TO DEVICE: " << dev_name << " **" << endl;
 
   for (int t = 0; t < num_trials; t++) {
-    runQuery(q,
+    runQuery(q, 
         d_lo_orderdate, d_lo_custkey, d_lo_partkey, d_lo_suppkey, d_lo_revenue, d_lo_supplycost, LO_LEN,
         d_d_datekey, d_d_year, D_LEN,
-        d_p_partkey, d_p_mfgr, d_p_category, P_LEN,
-        d_s_suppkey, d_s_region, d_s_nation, S_LEN,
-        d_c_custkey, d_c_region, C_LEN
+        d_p_partkey, d_p_mfgr, P_LEN,
+        d_s_suppkey, d_s_region, S_LEN,
+        d_c_custkey, d_c_region, d_c_nation, C_LEN
     );
   }
 

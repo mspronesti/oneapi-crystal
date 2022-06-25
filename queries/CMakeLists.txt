@@ -6,7 +6,7 @@ cmake_minimum_required(VERSION 3.10)
 # add_query(<cpp_filename_without_extension>)
 #############################################
 macro(add_query query)
-    add_executable(${query} ${query}.dp.cpp)
+    add_executable(${query} ${query}.cpp)
     # just compile an application using 
     # oneapi_crystal like this
     target_link_libraries(${query} oneapi_crystal)

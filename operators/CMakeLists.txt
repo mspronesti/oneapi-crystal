@@ -6,7 +6,7 @@ cmake_minimum_required(VERSION 3.10)
 # add_operator(<cpp_filename_without_extension>)
 #################################################
 macro(add_operator op)
-    add_executable(${op} ${op}.dp.cpp)
+    add_executable(${op} ${op}.cpp)
     # just compile an application using 
     # oneapi_crystal like this
     target_link_libraries(${op} oneapi_crystal)

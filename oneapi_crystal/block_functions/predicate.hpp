@@ -3,12 +3,11 @@
 #pragma once
 
 #include <CL/sycl.hpp>
-#include <dpct/dpct.hpp>
           
 namespace crystal {
 
     template < int block_threads, int items_per_thread>
-    __dpct_inline__ void init_flags(int (&selection_flags)[items_per_thread]) 
+    inline void init_flags(int (&selection_flags)[items_per_thread]) 
     {
         #pragma unroll
         for (int i = 0; i < items_per_thread; i++) {
@@ -23,7 +22,7 @@ namespace crystal {
         int block_threads, 
         int items_per_thread
         >
-    __dpct_inline__ void predicate_direct(
+    inline void predicate_direct(
             int tid,
             T (&items)[items_per_thread],
             SelectOp select_op,
@@ -43,7 +42,7 @@ namespace crystal {
         unsigned int block_threads,
         unsigned int items_per_thread
         >
-    __dpct_inline__ void predicate_direct (
+    inline void predicate_direct (
         int tid, 
         T (&items)[items_per_thread], 
         SelectOp select_op,
@@ -65,7 +64,7 @@ namespace crystal {
             int block_threads,
             int items_per_thread
             >
-    __dpct_inline__ void predicate (
+    inline void predicate (
         T (&items)[items_per_thread], 
         SelectOp select_op,
         int (&selection_flags)[items_per_thread],
@@ -88,7 +87,7 @@ namespace crystal {
             int block_threads,
             int items_per_thread
             >
-    __dpct_inline__ void predicate_and_direct (
+    inline void predicate_and_direct (
             int tid,
             T (&items)[items_per_thread],
             SelectOp select_op,
@@ -107,7 +106,7 @@ namespace crystal {
             unsigned int block_threads,
             unsigned int items_per_thread
             >
-    __dpct_inline__ void predicate_and_direct (
+    inline void predicate_and_direct (
             int tid,
             T (&items)[items_per_thread],
             SelectOp select_op,
@@ -129,7 +128,7 @@ namespace crystal {
             int block_threads,
             int items_per_thread
             >
-    __dpct_inline__ void predicate_and (
+    inline void predicate_and (
             T (&items)[items_per_thread],
             SelectOp select_op,
             int (&selection_flags)[items_per_thread],
@@ -152,7 +151,7 @@ namespace crystal {
             int block_threads,
             int items_per_thread
             >
-    __dpct_inline__ void predicate_or_direct (
+    inline void predicate_or_direct (
             int tid,
             T (&items)[items_per_thread],
             SelectOp select_op,
@@ -171,7 +170,7 @@ namespace crystal {
             int block_threads,
             int items_per_thread
             >
-    __dpct_inline__ void predicate_or_direct(
+    inline void predicate_or_direct(
             int tid,
             T (&items)[items_per_thread],
             SelectOp select_op,
@@ -193,7 +192,7 @@ namespace crystal {
             int block_threads,
             int items_per_thread
             >
-    __dpct_inline__ void predicate_or (
+    inline void predicate_or (
             T (&items)[items_per_thread],
             SelectOp select_op,
             int (&selection_flags)[items_per_thread],
@@ -216,9 +215,9 @@ namespace crystal {
     struct LessThan {
         T compare;
 
-        __dpct_inline__ LessThan(T compare) : compare(compare) {}
+        inline LessThan(T compare) : compare(compare) {}
 
-        __dpct_inline__ bool operator()(const T &a) const {
+        inline bool operator()(const T &a) const {
             return (a < compare);
         }
     };
@@ -227,9 +226,9 @@ namespace crystal {
     struct GreaterThan {
         T compare;
 
-        __dpct_inline__ GreaterThan(T compare) : compare(compare) {}
+        inline GreaterThan(T compare) : compare(compare) {}
 
-        __dpct_inline__ bool operator()(const T &a) const {
+        inline bool operator()(const T &a) const {
             return (a > compare);
         }
     };
@@ -238,9 +237,9 @@ namespace crystal {
     struct LessThanEq {
         T compare;
 
-        __dpct_inline__ LessThanEq(T compare) : compare(compare) {}
+        inline LessThanEq(T compare) : compare(compare) {}
 
-        __dpct_inline__ bool operator()(const T &a) const {
+        inline bool operator()(const T &a) const {
             return (a <= compare);
         }
     };
@@ -249,9 +248,9 @@ namespace crystal {
     struct GreaterThanEq {
         T compare;
 
-        __dpct_inline__ GreaterThanEq(T compare) : compare(compare) {}
+        inline GreaterThanEq(T compare) : compare(compare) {}
 
-        __dpct_inline__ bool operator()(const T &a) const {
+        inline bool operator()(const T &a) const {
             return (a >= compare);
         }
     };
@@ -260,15 +259,15 @@ namespace crystal {
     struct Eq {
         T compare;
 
-        __dpct_inline__ Eq(T compare) : compare(compare) {}
+        inline Eq(T compare) : compare(compare) {}
 
-        __dpct_inline__ bool operator()(const T &a) const {
+        inline bool operator()(const T &a) const {
             return (a == compare);
         }
     };
 
     template < typename T, int block_threads, int items_per_thread>
-    __dpct_inline__ void predicate_lt(
+    inline void predicate_lt(
             T (&items)[items_per_thread],
             T compare,
             int (&selection_flags)[items_per_thread],
@@ -279,7 +278,7 @@ namespace crystal {
     }
 
     template < typename T, int block_threads, int items_per_thread>
-    __dpct_inline__ void predicate_and_lt (
+    inline void predicate_and_lt (
             T (&items)[items_per_thread],
             T compare,
             int (&selection_flags)[items_per_thread],
@@ -290,7 +289,7 @@ namespace crystal {
     }
 
     template < typename T, int block_threads, int items_per_thread>
-    __dpct_inline__ void predicate_gt (
+    inline void predicate_gt (
             T (&items)[items_per_thread],
             T compare,
             int (&selection_flags)[items_per_thread],
@@ -302,7 +301,7 @@ namespace crystal {
     }
 
     template < typename T, int block_threads, int items_per_thread>
-    __dpct_inline__ void predicate_and_gt (
+    inline void predicate_and_gt (
             T (&items)[items_per_thread],
             T compare,
             int (&selection_flags)[items_per_thread],
@@ -314,7 +313,7 @@ namespace crystal {
     }
 
     template < typename T, int block_threads, int items_per_thread>
-    __dpct_inline__ void predicate_lte (
+    inline void predicate_lte (
             T (&items)[items_per_thread],
             T compare,
             int (&selection_flags)[items_per_thread],
@@ -328,7 +327,7 @@ namespace crystal {
     }
 
     template < typename T, int block_threads, int items_per_thread>
-    __dpct_inline__ void predicate_and_lte (
+    inline void predicate_and_lte (
             T (&items)[items_per_thread],
             T compare,
             int (&selection_flags)[items_per_thread],
@@ -342,7 +341,7 @@ namespace crystal {
     }
 
     template < typename T, int block_threads, int items_per_thread>
-    __dpct_inline__ void predicate_gte(
+    inline void predicate_gte(
             T (&items)[items_per_thread],
             T compare,
             int (&selection_flags)[items_per_thread],
@@ -357,7 +356,7 @@ namespace crystal {
 
 
     template < typename T, int block_threads, int items_per_thread>
-    __dpct_inline__ void predicate_and_gte (
+    inline void predicate_and_gte (
             T (&items)[items_per_thread],
             T compare,
             int (&selection_flags)[items_per_thread],
@@ -372,7 +371,7 @@ namespace crystal {
     }
 
     template < typename T, int block_threads, int items_per_thread>
-    __dpct_inline__ void predicate_eq (
+    inline void predicate_eq (
             T (&items)[items_per_thread],
             T compare,
             int (&selection_flags)[items_per_thread],
@@ -387,7 +386,7 @@ namespace crystal {
 
 
     template < typename T, int block_threads, int items_per_thread>
-    __dpct_inline__ void predicate_and_eq (
+    inline void predicate_and_eq (
             T (&items)[items_per_thread],
             T compare,
             int (&selection_flags)[items_per_thread],
@@ -406,7 +405,7 @@ namespace crystal {
         int block_threads, 
         int items_per_thread
         >
-    __dpct_inline__ void predicate_or_eq (
+    inline void predicate_or_eq (
             T (&items)[items_per_thread],
             T compare,
             int (&selection_flags)[items_per_thread],
