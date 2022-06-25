@@ -1,4 +1,5 @@
 #include <CL/sycl.hpp>
+
 #include <dpct/dpct.hpp>
 #include <iostream>
 #include <oneapi/mkl.hpp>
@@ -11,8 +12,8 @@
 #include "../oneapi_crystal/tools/duration_logger.hpp"
 #include "../oneapi_crystal/utils/atomic.hpp"
 
-#define TILE_SIZE block_threads * items_per_thread
 
+#define TILE_SIZE (block_threads * items_per_thread)
 using namespace crystal;
 using namespace std;
 
@@ -81,19 +82,25 @@ void run_query(
 ) 
 {
   try {
+    chrono::high_resolution_clock::time_point st, finish;
+    st = chrono::high_resolution_clock::now();
+
     unsigned long long* d_sum = nullptr;
     d_sum = (unsigned long long*)malloc_device(sizeof(unsigned long long), q);
 
     q.memset(d_sum, 0, sizeof(unsigned long long)).wait();
 
     // Run ----------------------
-    int tile_items = 128 * 4; // replace with a define!
-    int num_blocks = (lo_num_entries + tile_items - 1)/tile_items;
+    int tile_items = 128 * 4; 
+
+    int n_threads = 128;
+    int n_blocks = (lo_num_entries + tile_items - 1)/tile_items;
 
     q.submit([&](sycl::handler &h){
 
-        h.parallel_for<class q11>(sycl::nd_range<1>({static_cast<size_t>(num_blocks*128)},{128}),
-         [=](auto& it) {
+        h.parallel_for<class q11>(sycl::nd_range<1>(n_blocks * n_threads, n_threads), 
+         [=](auto& it) 
+        {
           query_kernel<128, 4>(lo_orderdate, lo_discount,
             lo_quantity, lo_extendedprice, lo_num_entries, d_sum, it);
         });
@@ -105,8 +112,12 @@ void run_query(
     unsigned long long revenue;
     q.memcpy(&revenue, d_sum, sizeof(unsigned long long)).wait();
 
+    finish = chrono::high_resolution_clock::now();
+    std::chrono::duration<double> diff = finish - st;
+    
     std::cout << "Revenue: " << revenue << endl;
-
+    std::cout << "Time Taken Total: " << diff.count() * 1000 << endl;
+    
     sycl::free(d_sum, q);
   }
   catch (sycl::exception const &exc) {
@@ -153,12 +164,8 @@ int main(int argc, char** argv)
   cout << "** LOADED DATA TO DEVICE: " << dev_name << " **"<< endl;
 
   for (int t = 0; t < num_trials; t++) {
-    {
-      DurationLogger dl{"Query 11"};
-      run_query(q, d_lo_orderdate, d_lo_discount, d_lo_quantity, d_lo_extendedprice, LO_LEN);
-
-    }
-    
+      run_query(q, d_lo_orderdate, d_lo_discount, 
+          d_lo_quantity, d_lo_extendedprice, LO_LEN);    
   }
 
   return 0;

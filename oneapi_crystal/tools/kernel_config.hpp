@@ -1,5 +1,5 @@
 #ifndef ONEAPI_CRYSTAL_KERNEL_CONFIG_HPP
-#define ONEAPI_CRYATAL_KERNEL_CONFIG_HPP
+#define ONEAPI_CRYSTAL_KERNEL_CONFIG_HPP
 #pragma once
 
 #include <CL/sycl.hpp>

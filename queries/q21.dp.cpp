@@ -1,16 +1,19 @@
 #include <CL/sycl.hpp>
+
 #include <dpct/dpct.hpp>
 #include <iostream>
 #include <oneapi/mkl.hpp>
-#include <oneapi/mkl/rng/device.hpp>
 
+#include <oneapi/mkl/rng/device.hpp>
 #include <oneapi_crystal/crystal.hpp>
 
 #include "ssb_utils.h"
 #include "../oneapi_crystal/tools/queue_helpers.hpp"
 #include "../oneapi_crystal/tools/duration_logger.hpp"
+#include "../oneapi_crystal/utils/atomic.hpp"
 
-#define TILE_SIZE block_threads * items_per_thread
+
+#define TILE_SIZE (block_threads * items_per_thread)
 
 using namespace crystal;
 using namespace std;
@@ -309,10 +312,11 @@ int main(int argc, char** argv)
 
   for (int t = 0; t < num_trials; t++) {
         run_query (q,
-        d_lo_orderdate, d_lo_partkey, d_lo_suppkey, d_lo_revenue, LO_LEN,
-        d_p_partkey, d_p_brand1, d_p_category, P_LEN,
-        d_d_datekey, d_d_year, D_LEN,
-        d_s_suppkey, d_s_region, S_LEN); 
+          d_lo_orderdate, d_lo_partkey, d_lo_suppkey, d_lo_revenue, LO_LEN,
+          d_p_partkey, d_p_brand1, d_p_category, P_LEN,
+          d_d_datekey, d_d_year, D_LEN,
+          d_s_suppkey, d_s_region, S_LEN
+        ); 
     
   }
 

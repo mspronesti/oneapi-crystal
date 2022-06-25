@@ -43,11 +43,12 @@ public:
     ~DurationLogger() {
         auto stop = high_resolution_clock::now();
         auto duration = duration_cast<microseconds>(stop - _start);
-        double elapsed = static_cast<double>(duration.count()) / 1E6;
+        // elapsed in ms
+        double elapsed = static_cast<double>(duration.count()) / 1E3;
 
         std::cout << (!_caller.empty() ? "[" + _caller + "] " : "")
                   << "Elapsed time: "
-                  << elapsed << " s\n";
+                  << elapsed << " ms\n";
     }
 
 private:

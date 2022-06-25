@@ -1,10 +1,10 @@
-cmake_minimum_required(VERSION 2.8 )
+cmake_minimum_required(VERSION 3.10)
 
-#############################
-# use this macro to add examples
+#############################################
+# use this macro to add queries
 # like this:
 # add_query(<cpp_filename_without_extension>)
-##############################
+#############################################
 macro(add_query query)
     add_executable(${query} ${query}.dp.cpp)
     # just compile an application using 

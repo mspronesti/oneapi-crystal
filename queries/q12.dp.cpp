@@ -1,7 +1,9 @@
 #include <CL/sycl.hpp>
+
 #include <dpct/dpct.hpp>
 #include <iostream>
 #include <oneapi/mkl.hpp>
+
 #include <oneapi/mkl/rng/device.hpp>
 #include <oneapi_crystal/crystal.hpp>
 
@@ -10,8 +12,8 @@
 #include "../oneapi_crystal/tools/duration_logger.hpp"
 #include "../oneapi_crystal/utils/atomic.hpp"
 
-#define TILE_SIZE block_threads * items_per_thread
 
+#define TILE_SIZE (block_threads * items_per_thread)
 using namespace crystal;
 using namespace std;
 
