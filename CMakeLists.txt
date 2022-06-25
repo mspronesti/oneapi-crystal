@@ -29,3 +29,10 @@ if(BUILD_QUERIES)
     add_subdirectory(queries)
 endif()
 unset (BUILD_QUERIES CACHE)
+
+# Set this to 'ON' to compile the operators
+option(BUILD_OPERATORS "Build the operators" OFF)
+if(BUILD_OPERATORS)
+    add_subdirectory(operators)
+endif()
+unset (BUILD_OPERATORS CACHE)
