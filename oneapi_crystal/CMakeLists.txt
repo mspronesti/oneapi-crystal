@@ -11,7 +11,6 @@ set (src
     block_functions/join.dp.hpp
     block_functions/load.dp.hpp
     block_functions/predicate.dp.hpp
-    block_functions/reduce.dp.hpp
     block_functions/store.dp.hpp
 )
 

@@ -5,7 +5,6 @@
 #include "block_functions/join.dp.hpp"
 #include "block_functions/load.dp.hpp"
 #include "block_functions/predicate.dp.hpp"
-#include "block_functions/reduce.dp.hpp"
 #include "block_functions/store.dp.hpp"
 
 
