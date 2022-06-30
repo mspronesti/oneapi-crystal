@@ -8,10 +8,10 @@ endif()
 
 set (src
     crystal.hpp
-    block_functions/join.dp.hpp
-    block_functions/load.dp.hpp
-    block_functions/predicate.dp.hpp
-    block_functions/store.dp.hpp
+    block_functions/join.hpp
+    block_functions/load.hpp
+    block_functions/predicate.hpp
+    block_functions/store.hpp
 )
 
 if (MKL_INCLUDE_DIRS AND MKL_LIBRARIES AND MKL_INTERFACE_LIBRARY AND

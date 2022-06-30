@@ -32,9 +32,17 @@ jobs:
         source /opt/intel/oneapi/setvars.sh
         printenv >> $GITHUB_ENV
     
-    - name: Build
+    - name: Build Queries
       run:  |
         mkdir -p build
         cd build
-        CXX=dpcpp cmake ..
-        make -j
+        CXX=dpcpp cmake .. -DBUILD_QUERIES=ON
+        make -j `nproc`
+    
+    - name: Build Operators
+      run:  |
+        mkdir -p build
+        cd build
+        CXX=dpcpp cmake .. -DBUILD_OPERATORS=ON
+        make -j `nproc`
+    

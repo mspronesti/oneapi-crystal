@@ -60,7 +60,7 @@ vi queries/ssb_utils.h
 now build the queries
 
 ```bash
-make all_queries
+make queries
 ```
 
 and run, say q11
@@ -69,3 +69,14 @@ and run, say q11
 ./build/q11
 ```
 
+## Run the operators
+
+Compile the operators running 
+```shell
+make operators
+```
+then benchmark, say the hash join like this
+
+```shell
+./build/join <table_size>
+```
